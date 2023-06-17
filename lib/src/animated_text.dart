@@ -85,6 +85,8 @@ class AnimatedTextKit extends StatefulWidget {
   /// This method will run only if [isRepeatingAnimation] is set to false.
   final VoidCallback? onFinished;
 
+  final void Function()? isContinue;
+
   /// Adds the onNext callback to the animated widget.
   ///
   /// Will be called right before the next text, after the pause parameter
@@ -114,6 +116,7 @@ class AnimatedTextKit extends StatefulWidget {
   const AnimatedTextKit({
     Key? key,
     required this.animatedTexts,
+    this.isContinue,
     this.pause = const Duration(milliseconds: 1000),
     this.displayFullTextOnTap = false,
     this.stopPauseOnTap = false,
@@ -147,6 +150,9 @@ class _AnimatedTextKitState extends State<AnimatedTextKit>
   bool _isCurrentlyPausing = false;
 
   Timer? _timer;
+  
+  bool get _isAnimating => _controller.isAnimating;
+
 
   @override
   void initState() {
@@ -222,8 +228,15 @@ class _AnimatedTextKitState extends State<AnimatedTextKit>
     _currentAnimatedText.initAnimation(_controller);
 
     _controller
+      ..addListener(animating)
       ..addStatusListener(_animationEndCallback)
       ..forward();
+  }
+
+  void animating(){
+    if(_controller.isAnimating){
+      widget.isContinue?.call();
+    }
   }
 
   void _setPause() {
